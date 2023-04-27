@@ -11,7 +11,7 @@ export type FormData = {
     has(name: string): boolean;
     set(name: string, value: string | Blob, fileName?: string): void;
     forEach(callback: (value: string, key: string, parent: FormData) => void): void;
-}
+}           
 
 export type Details = {
     po_id: string,
