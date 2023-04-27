@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { getAllPOItems, getDetailsWithID, insert, updatePOData, xldownload } from '../services';
 import xlsx from 'sheetjs-style';
-import {  UpdateDetails } from '../types';
+import { UpdateDetails } from '../types';
+import { insertXlSData } from '../services/EVCal';
 
 export const podetails = async (req: Request, res: Response) => {
     try {
@@ -36,7 +37,7 @@ export const getAllPO = async (req: Request, res: Response) => {
 export const getDetails = async (req: Request, res: Response) => {
     try {
         const id: string = req.params.id;
-        const data  = await getDetailsWithID(id);
+        const data = await getDetailsWithID(id);
         if (data) {
             res.status(200).send(data.Item);
         } else {
@@ -48,8 +49,8 @@ export const getDetails = async (req: Request, res: Response) => {
 }
 export const updateDetails = async (req: Request, res: Response) => {
     try {
-        const id:string = req.params.id;
-        const data:UpdateDetails[] = req.body;
+        const id: string = req.params.id;
+        const data: UpdateDetails[] = req.body;
         updatePOData(id, data);
         res.status(200).send('Updated successfully.');
 
@@ -58,15 +59,28 @@ export const updateDetails = async (req: Request, res: Response) => {
         res.sendStatus(404).json({ msg: 'something went wrong' });
     }
 }
-
+//EVCal
 export const xlDownloadAllData = (async (req: Request, res: Response) => {
     try {
-        const data:xlsx.WorkBook =  await xldownload()
+        const data: xlsx.WorkBook = await xldownload()
         res.status(200).send(data);
     } catch (err) {
         res.sendStatus(404).json({ msg: 'File Not Found' });
     }
 });
+
+export const xlDataInsert = (async (req: Request, res: Response) => {
+    try {
+        console.log("yes")
+        const data = req.body;
+        insertXlSData(data)
+        res.send("EV Data inserted successfully.");
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(404).json({ msg: 'File Not Found' });
+
+    }
+})
 
 
 
