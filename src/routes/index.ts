@@ -1,6 +1,6 @@
 
 import express, { Request, Response } from 'express';
-import { getAllPO, getDetails, podetails, updateDetails } from '../controllers';
+import {  getAllPO, getDetails, podetails, updateDetails, xlDownloadAllData } from '../controllers';
 import { upload } from '../utils/uploadPdf';
 const router = express.Router();
 
@@ -20,8 +20,8 @@ router.get('/getAllItems',getAllPO);
 router.get('/getdetails/:id',getDetails);
 router.patch('/poDetails/:id',updateDetails);
 
-
-
+//routes for EVC
+router.get('/xlData',xlDownloadAllData)
 
 
 
