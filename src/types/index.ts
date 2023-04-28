@@ -35,3 +35,17 @@ export type UpdateDetails={
   dmrNo?: string
     
 }
+
+
+//types of EVCal
+export interface EmployeeData {
+    Resource: string;
+    Ofshore: string;
+    [key: string]: string; // Allows for dynamic addition of key-value pairs
+}
+export type TypeYearValueCalcutaion = {
+    [key: string]: string[] 
+  };
+  export type TypeYearValueCalcutaion2 = {
+    [key: string]:  number
+  };

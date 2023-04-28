@@ -1,5 +1,8 @@
 import xlsx from 'sheetjs-style';
+import { EmployeeData, TypeYearValueCalcutaion, TypeYearValueCalcutaion2 } from '../types';
 
+
+ 
 export const insertXlSData = (data: xlsx.WorkSheet) => {
     const wb: xlsx.WorkBook = xlsx.readFile("./src/resources/Output.xlsx", {
         cellFormula: true,
@@ -13,7 +16,7 @@ export const insertXlSData = (data: xlsx.WorkSheet) => {
     const secondWorksheetData: xlsx.WorkSheet = data;
     const mergedDataMap = new Map();
     [xls, secondWorksheetData].map((worksheetData) => {
-        worksheetData.map((row: any) => {
+        worksheetData.map((row: EmployeeData) => {
             const Resource = row["Resource"];
             if (mergedDataMap.has(Resource)) {
                 const existingRow = mergedDataMap.get(Resource);
@@ -54,14 +57,14 @@ const xlsxSort = () => {
     const sheetName = 'JP-M';
 
     const worksheet: xlsx.WorkSheet = workbook.Sheets[sheetName];
-    const data : unknown[]= xlsx.utils.sheet_to_json(worksheet);
+    const data: EmployeeData[] = xlsx.utils.sheet_to_json(worksheet);
 
     const offshoreSum: Record<string, number> = {};
     const onsiteSum: Record<string, number> = {};
 
 
 
-    data.map((row: any) => {
+    data.map((row: EmployeeData) => {
         Object.keys(row).slice(2).map((colName) => {
             const cellValue = row[colName];
             const cellValueNum = Number(cellValue);
@@ -83,7 +86,10 @@ const xlsxSort = () => {
     })
 
     //Calculation Offshore
-    const YearOffShore: { [key: string]: any } = {};
+    const YearOffShore: TypeYearValueCalcutaion = {};
+    const YearOffShore2: TypeYearValueCalcutaion2 = {};
+
+
     const month = Object.keys(offshoreSum);
     month.map((month: string) => {
         const year = month.split("-")[1];
@@ -94,20 +100,31 @@ const xlsxSort = () => {
             YearOffShore[year].push(`${offshoreSum[month]}`);
         }
     });
+
+    
+
     Object.keys(YearOffShore).map((data: string) => {
         const sum = YearOffShore[data].reduce(
             (acc: number, val: string) => acc + parseFloat(val),
             0
         );
-        YearOffShore[data] = sum;
-    });
-    Object.keys(YearOffShore).map((key: string) => {
-        const year = Number(`20${key}`);
-        YearOffShore[year] = YearOffShore[key];
-        delete YearOffShore[key];
-    });
+        YearOffShore2[data] = sum;
 
-    const YearOnShore: { [key: string]: any } = {};
+    });
+     
+
+    Object.keys(YearOffShore2).map((key: string) => {
+        const year = Number(`20${key}`);
+        YearOffShore2[year] = YearOffShore2[key];
+        delete YearOffShore2[key];
+    });
+    
+
+
+    const YearOnShore: TypeYearValueCalcutaion = {};
+    const YearOnShore2: TypeYearValueCalcutaion2 = {};
+
+
     const monthOnShore = Object.keys(onsiteSum);
     monthOnShore.map((monthOnShore) => {
         const year = monthOnShore.split("-")[1];
@@ -125,12 +142,12 @@ const xlsxSort = () => {
             (acc: number, val: string) => acc + parseFloat(val),
             0
         );
-        YearOnShore[data] = sum;
+        YearOnShore2[data] = sum;
     });
-    Object.keys(YearOnShore).map((key) => {
+    Object.keys(YearOnShore2).map((key) => {
         const year = Number(`20${key}`);
-        YearOnShore[year] = YearOnShore[key];
-        delete YearOnShore[key];
+        YearOnShore2[year] = YearOnShore2[key];
+        delete YearOnShore2[key];
     });
     // const offshoreTotal = Object.values(offshoreSum).reduce(
     //     (total, value) => total + value,
@@ -144,10 +161,10 @@ const xlsxSort = () => {
     //   console.log(offshoreTotal,onsiteTotal)
 
     //UPDATE EXCEL DATA
-    dataUpdate(YearOffShore, YearOnShore);
+    dataUpdate(YearOffShore2, YearOnShore2);
 };
 
-const dataUpdate = (YearOffShore: { [key: string]: any;}, YearOnShore: {[key: string]: any;}) => {
+const dataUpdate = (YearOffShore: TypeYearValueCalcutaion2, YearOnShore: TypeYearValueCalcutaion2) => {
     const workbook: xlsx.WorkBook = xlsx.readFile("./src/resources/Output.xlsx", {
         cellFormula: true,
         type: "binary",
@@ -157,10 +174,10 @@ const dataUpdate = (YearOffShore: { [key: string]: any;}, YearOnShore: {[key: st
 
     const sheetnames = workbook.SheetNames;
 
-    const allYears : { [key: string]: any } = {};
+    const allYears: { [key: string]: { offshore: number, onshore: number, offRate: number, onRate: number } } = {};
+    // 
 
-   
-    Object.keys(YearOffShore).map((year:any)=>{
+    Object.keys(YearOffShore).map((year: string) => {
         if (Object.prototype.hasOwnProperty.call(YearOnShore, year)) {
             allYears[year] = {
                 offshore: YearOffShore[year],
@@ -170,9 +187,9 @@ const dataUpdate = (YearOffShore: { [key: string]: any;}, YearOnShore: {[key: st
             };
         }
     })
-    // console.log(allYears);
+    
     const headers = ["Year", "Type", "Hours", "Rate", "Consumption"];
-    const worksheet : xlsx.WorkSheet= xlsx.utils.json_to_sheet(
+    const worksheet: xlsx.WorkSheet = xlsx.utils.json_to_sheet(
         Object.entries(allYears).flatMap(([year, values]) => [
             [
                 year,
@@ -227,8 +244,8 @@ const dataUpdate = (YearOffShore: { [key: string]: any;}, YearOnShore: {[key: st
 
     let rowIndex = 2;
     const header = 1;
-    
-    Object.keys(allYears).map((year:string)=>{
+
+    Object.keys(allYears).map((year: string) => {
         const yearData = allYears[year];
 
         //Headers
@@ -239,7 +256,7 @@ const dataUpdate = (YearOffShore: { [key: string]: any;}, YearOnShore: {[key: st
         worksheet[`E${header}`] = { t: "s", v: "Consumption", s: style };
 
         //// Offshore
-      
+
         worksheet[`C${rowIndex}`] = { t: "n", v: yearData.offshore };
         worksheet[`D${rowIndex}`] = { t: "s", v: "JPY 3260" };
         const consumptionFormula = `="JPY"&" "&ROUND(C${rowIndex}*REPLACE(D${rowIndex},1,4,0),2)`;
@@ -247,7 +264,7 @@ const dataUpdate = (YearOffShore: { [key: string]: any;}, YearOnShore: {[key: st
         rowIndex++;
 
         //// Onsite
-      
+
         worksheet[`C${rowIndex}`] = { t: "n", v: yearData.onshore };
         worksheet[`D${rowIndex}`] = { t: "s", v: "JPY 11075" };
         const consumptionFormula2 = `="JPY"&" "&ROUND(C${rowIndex}*REPLACE(D${rowIndex},1,4,0),2)`;
@@ -266,7 +283,7 @@ const dataUpdate = (YearOffShore: { [key: string]: any;}, YearOnShore: {[key: st
         { width: 20 },
     ];
     xlsx.utils.book_append_sheet(newwb, worksheet, "JP-EV");
-    sheetnames.map((sheet:string) => {
+    sheetnames.map((sheet: string) => {
         if (sheet !== "JP-EV") {
             const ws = workbook.Sheets[sheet];
             xlsx.utils.book_append_sheet(newwb, ws, sheet);
