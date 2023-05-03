@@ -2,11 +2,17 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
+    // "allowJs": true,
+    // "declaration": true,
+    // "emitDeclarationOnly": true,
     "strict": true,
     "esModuleInterop": true,
+    
+    "noImplicitAny": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
+    // "declarationMap": true,
     "sourceMap": true
   },
   "include": ["src/**/*"]
